@@ -1,5 +1,5 @@
 import staticAdapter from "@sveltejs/adapter-static"
-import { execSync, spawnSync } from "child_process"
+import { execSync } from "child_process"
 import { join, resolve } from "path"
 import { writeFileSync } from "fs"
 import chalk from "chalk"
@@ -9,6 +9,7 @@ import chalk from "chalk"
  *     "name"?: string,
  *     "applicationId"?: string,
  *     "icon"?: string,
+ *     "port"?: number,
  *     "window"?: {
  *         "width"?: number,
  *         "height"?: number,
@@ -25,6 +26,7 @@ import chalk from "chalk"
 const defaultOptions = {
     name: "Svelte Kit",
     applicationId: "dev.svelte.kit",
+    port: 8001,
     icon: "favicon.png",
     window: {
         width: 800,
@@ -45,27 +47,26 @@ export default function (options = defaultOptions) {
         name: "@macfja/svelte-adapter-neutralino",
 
         async adapt(builder) {
-            const utils = builder.utils;
             options = { ...defaultOptions, ...options }
             options.window = { ...defaultOptions.window, ...options.window }
             console.log(
                 chalk.bgCyan(" INFO ") +
                     " Using Neutralinojs with version:" +
                     ("\n\t- Client: " + chalk.gray("3.0.0")) +
-                    ("\n\t- Binary: " + chalk.gray("4.0.0")) +
-                    ("\n\t- CLI: " + chalk.gray("^8.0"))
+                    ("\n\t- Binary: " + chalk.gray("4.1.0")) +
+                    ("\n\t- CLI: " + chalk.gray("^8.1.0"))
             )
 
-            const tmpPath = join(".svelte-kit", "neutralino")
-            utils.rimraf(tmpPath)
-            utils.mkdirp(join(tmpPath, "build"))
+            const tmpPath = builder.getBuildDirectory("neutralino")
+            builder.rimraf(tmpPath)
+            builder.mkdirp(join(tmpPath, "build"))
 
             writeFileSync(
                 join(tmpPath, "neutralino.config.json"),
                 JSON.stringify({
                     applicationId: options.applicationId,
                     defaultMode: "window",
-                    port: 8080,
+                    port: options.port,
                     url: "/",
                     documentRoot: "build/",
                     enableServer: true,
@@ -98,7 +99,7 @@ export default function (options = defaultOptions) {
                         resourcesPath: "/build/",
                         extensionsPath: "/",
                         clientLibrary: "/build/neutralino.js",
-                        binaryVersion: "4.0.0",
+                        binaryVersion: "4.1.0",
                         clientVersion: "3.0.0",
                     },
                 })
@@ -114,8 +115,8 @@ export default function (options = defaultOptions) {
             execSync('npx --quiet "@neutralinojs/neu@^8.0" build --release', { cwd: tmpPath })
 
             console.log(chalk.bgYellow(" Building ") + " Finalising...")
-            utils.mkdirp(options.output)
-            utils.copy(join(tmpPath, "dist") + "/.", options.output)
+            builder.mkdirp(options.output)
+            builder.copy(join(tmpPath, "dist") + "/.", options.output)
 
             console.log(
                 chalk.bgGreen(" Success ") + " Application is available in " + chalk.cyan(resolve(options.output))
