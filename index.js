@@ -45,6 +45,7 @@ export default function (options = defaultOptions) {
         name: "@macfja/svelte-adapter-neutralino",
 
         async adapt(builder) {
+            const utils = builder.utils;
             options = { ...defaultOptions, ...options }
             options.window = { ...defaultOptions.window, ...options.window }
             console.log(
@@ -56,8 +57,8 @@ export default function (options = defaultOptions) {
             )
 
             const tmpPath = join(".svelte-kit", "neutralino")
-            spawnSync("rm", ["-rf", tmpPath])
-            spawnSync("mkdir", ["-p", join(tmpPath, "build")])
+            utils.rimraf(tmpPath)
+            utils.mkdirp(join(tmpPath, "build"))
 
             writeFileSync(
                 join(tmpPath, "neutralino.config.json"),
@@ -113,8 +114,8 @@ export default function (options = defaultOptions) {
             execSync('npx --quiet "@neutralinojs/neu@^8.0" build --release', { cwd: tmpPath })
 
             console.log(chalk.bgYellow(" Building ") + " Finalising...")
-            spawnSync("mkdir", ["-p", options.output])
-            spawnSync("cp", ["-r", join(tmpPath, "dist") + "/.", options.output])
+            utils.mkdirp(options.output)
+            utils.copy(join(tmpPath, "dist") + "/.", options.output)
 
             console.log(
                 chalk.bgGreen(" Success ") + " Application is available in " + chalk.cyan(resolve(options.output))

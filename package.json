@@ -2,7 +2,7 @@
     "name": "@macfja/svelte-adapter-neutralino",
     "description": "SvelteKit adapter to generate a Neutralinojs application",
     "type": "module",
-    "version": "0.1.0",
+    "version": "0.1.1",
     "exports": {
         ".": {
             "import": "./index.js"
