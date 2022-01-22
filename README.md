@@ -30,6 +30,10 @@ export default {
                 maximize: false,
             },
             output: "build",
+            verions: {
+                client: "3.1.0",
+                binary: "4.2.0",
+            },
         }),
     },
 }

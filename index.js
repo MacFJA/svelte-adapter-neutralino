@@ -18,7 +18,11 @@ import chalk from "chalk"
  *         "resizable"?: boolean,
  *         "maximize"?: boolean
  *     },
- *     "output"?: string
+ *     "output"?: string;
+ *     "versions": {
+ *         "client": string,
+ *         "binary": string
+ *     }
  * }} AdapterOptions
  */
 
@@ -37,7 +41,13 @@ const defaultOptions = {
         maximize: false,
     },
     output: "build",
+    versions: {
+        client: "3.1.0",
+        binary: "4.2.0",
+    },
 }
+
+const cliVersion = "^9.1.1"
 
 /**
  * @param {AdapterOptions} options
@@ -49,12 +59,13 @@ export default function (options = defaultOptions) {
         async adapt(builder) {
             options = { ...defaultOptions, ...options }
             options.window = { ...defaultOptions.window, ...options.window }
+            options.versions = { ...defaultOptions.versions, ...options.versions }
             console.log(
                 chalk.bgCyan(" INFO ") +
                     " Using Neutralinojs with version:" +
-                    ("\n\t- Client: " + chalk.gray("3.0.0")) +
-                    ("\n\t- Binary: " + chalk.gray("4.1.0")) +
-                    ("\n\t- CLI: " + chalk.gray("^8.1.0"))
+                    ("\n\t- Client: " + chalk.gray(options.versions.client)) +
+                    ("\n\t- Binary: " + chalk.gray(options.versions.binary)) +
+                    ("\n\t- CLI: " + chalk.gray(cliVersion))
             )
 
             const tmpPath = builder.getBuildDirectory("neutralino")
@@ -99,8 +110,8 @@ export default function (options = defaultOptions) {
                         resourcesPath: "/build/",
                         extensionsPath: "/",
                         clientLibrary: "/build/neutralino.js",
-                        binaryVersion: "4.1.0",
-                        clientVersion: "3.0.0",
+                        binaryVersion: options.versions.binary,
+                        clientVersion: options.versions.client,
                     },
                 })
             )
@@ -110,9 +121,9 @@ export default function (options = defaultOptions) {
             await adapter.adapt(builder)
 
             console.log(chalk.bgYellow(" Building ") + " Downloading Neutralinojs dependencies")
-            execSync('npx --quiet "@neutralinojs/neu@^8.0" update', { cwd: tmpPath })
+            execSync('npx --quiet "@neutralinojs/neu@' + cliVersion + '" update', { cwd: tmpPath })
             console.log(chalk.bgYellow(" Building ") + " Generating Neutralinojs release")
-            execSync('npx --quiet "@neutralinojs/neu@^8.0" build --release', { cwd: tmpPath })
+            execSync('npx --quiet "@neutralinojs/neu@' + cliVersion + '" build --release', { cwd: tmpPath })
 
             console.log(chalk.bgYellow(" Building ") + " Finalising...")
             builder.mkdirp(options.output)
